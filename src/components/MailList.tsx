@@ -73,7 +73,7 @@ export default function MailList({ type, searchQuery }: { type: MailType, search
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h2 className="text-xl font-bold text-slate-800 tracking-tight">Arsip {type === 'incoming' ? 'Surat Masuk' : 'Surat Keluar'}</h2>
+          <h2 className="text-xl font-bold text-slate-800 tracking-tight">Arsip {type === 'incoming' ? 'Surat Masuk' : type === 'outgoing' ? 'Surat Keluar' : 'SK dan SE'}</h2>
           <p className="text-xs text-slate-400 mt-0.5">Ditemukan {filteredMails.length} data arsip</p>
         </div>
         
@@ -151,10 +151,14 @@ export default function MailList({ type, searchQuery }: { type: MailType, search
                       </td>
                       <td className="px-6 py-4">
                         <p className="font-semibold text-slate-800 line-clamp-1">{mail.title}</p>
-                        <p className="text-[10px] text-slate-400 mt-0.5">{type === 'incoming' ? mail.sender : mail.recipient}</p>
+                        <p className="text-[10px] text-slate-400 mt-0.5">{type === 'incoming' ? mail.sender : (type === 'skse' ? 'Instansi' : mail.recipient)}</p>
                       </td>
                       <td className="px-6 py-4">
-                        <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${type === 'incoming' ? 'bg-blue-50 text-blue-600' : 'bg-emerald-50 text-emerald-600'}`}>
+                        <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${
+                          type === 'incoming' ? 'bg-blue-50 text-blue-600' : 
+                          type === 'outgoing' ? 'bg-emerald-50 text-emerald-600' :
+                          'bg-purple-50 text-purple-600'
+                        }`}>
                           {categories.find(c => c.id === mail.categoryId)?.name || 'N/A'}
                         </span>
                       </td>
@@ -191,7 +195,7 @@ export default function MailList({ type, searchQuery }: { type: MailType, search
               </table>
             </div>
             <div className="px-6 py-3 bg-slate-50 border-t border-slate-100 flex items-center justify-between">
-              <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">SMP Negeri 01 Jakarta — Selesai</p>
+              <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">SDN Ragunan 14 Pagi — Selesai</p>
             </div>
           </div>
 

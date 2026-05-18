@@ -1,4 +1,4 @@
-export type MailType = 'incoming' | 'outgoing';
+export type MailType = 'incoming' | 'outgoing' | 'skse'; // SK = Surat Keputusan, SE = Surat Edaran
 
 export interface Category {
   id: string;

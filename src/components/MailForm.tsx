@@ -30,13 +30,17 @@ export default function MailForm({ type, mail, categories, onClose }: MailFormPr
   const [file, setFile] = useState<File | null>(null);
   const [tokenMissing, setTokenMissing] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
-  
+
+  const filteredCategories = type === 'skse' 
+    ? categories.filter(c => c.name.toLowerCase().includes('keputusan') || c.name.toLowerCase().includes('edaran'))
+    : categories;
+
   const [formData, setFormData] = useState({
     title: mail?.title || '',
     referenceNumber: mail?.referenceNumber || '',
     sender: mail?.sender || '',
     recipient: mail?.recipient || '',
-    categoryId: mail?.categoryId || (categories[0]?.id || ''),
+    categoryId: mail?.categoryId || (filteredCategories[0]?.id || ''),
     date: mail?.date || new Date().toISOString().split('T')[0],
     description: mail?.description || '',
     fileUrl: mail?.fileUrl || ''
@@ -49,13 +53,15 @@ export default function MailForm({ type, mail, categories, onClose }: MailFormPr
   };
 
   useEffect(() => {
-    if (type === 'outgoing' && !mail && formData.categoryId) {
+    if ((type === 'outgoing' || type === 'skse') && !mail && formData.categoryId) {
       const generateSequence = async () => {
         setIsGenerating(true);
         try {
-          const q = query(collection(db, 'mails'), where('type', '==', 'outgoing'));
+          const q = query(collection(db, 'mails'), where('type', '==', type));
           const snapshot = await getCountFromServer(q);
           const count = snapshot.data().count;
+                    
+          if (type === 'outgoing') {
           const nextNum = (count + 1).toString().padStart(3, '0');
           const category = categories.find(c => c.id === formData.categoryId);
           const code = category?.code || 'SK';
@@ -64,6 +70,13 @@ export default function MailForm({ type, mail, categories, onClose }: MailFormPr
             ...prev,
             referenceNumber: `${nextNum}/${code}`
           }));
+        } else if (type === 'skse') {
+            const year = new Date().getFullYear();
+            setFormData(prev => ({
+              ...prev,
+              referenceNumber: `${count + 1} Tahun ${year}`
+            }));
+          }
         } catch (err) {
           console.error("Error generating number", err);
         } finally {
@@ -188,7 +201,7 @@ export default function MailForm({ type, mail, categories, onClose }: MailFormPr
                   value={formData.referenceNumber}
                   onChange={e => setFormData({...formData, referenceNumber: e.target.value})}
                   className={`w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500/10 focus:border-blue-500 focus:bg-white outline-none transition-all text-sm font-mono ${isGenerating ? 'animate-pulse' : ''}`}
-                  placeholder="001/TU/2026"
+                  placeholder={type === 'skse' ? '1 Tahun 2026' : '001/TU/2026'}
                 />
                 {isGenerating && (
                   <div className="absolute right-3 top-1/2 -translate-y-1/2">
@@ -196,7 +209,7 @@ export default function MailForm({ type, mail, categories, onClose }: MailFormPr
                   </div>
                 )}
               </div>
-              {type === 'outgoing' && !mail && (
+              {(type === 'outgoing' || type === 'skse') && !mail && (
                 <p className="text-[9px] text-blue-600 font-bold mt-1 uppercase tracking-tighter italic">Generated Otomatis</p>
               )}
             </div>
@@ -213,12 +226,12 @@ export default function MailForm({ type, mail, categories, onClose }: MailFormPr
             </div>
 
             <div>
-              <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">{type === 'incoming' ? 'Asal / Pengirim' : 'Tujuan / Penerima'} *</label>
+              <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">{type === 'incoming' ? 'Asal / Pengirim' : (type === 'skse' ? 'Instansi / Penerbit' : 'Tujuan / Penerima')} *</label>
               <input 
                 required
                 type="text" 
-                value={type === 'incoming' ? formData.sender : formData.recipient}
-                onChange={e => setFormData({...formData, [type === 'incoming' ? 'sender' : 'recipient']: e.target.value})}
+                value={type === 'incoming' ? formData.sender : (type === 'skse' ? formData.sender : formData.recipient)}
+                onChange={e => setFormData({...formData, [type === 'incoming' || type === 'skse' ? 'sender' : 'recipient']: e.target.value})}
                 className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500/10 focus:border-blue-500 focus:bg-white outline-none transition-all text-sm"
               />
             </div>
@@ -232,9 +245,12 @@ export default function MailForm({ type, mail, categories, onClose }: MailFormPr
                   onChange={e => setFormData({...formData, categoryId: e.target.value})}
                   className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500/10 focus:border-blue-500 focus:bg-white outline-none transition-all text-sm appearance-none pr-10"
                 >
-                  {categories.map(cat => (
+                  {filteredCategories.map(cat => (
                     <option key={cat.id} value={cat.id}>{cat.name}</option>
                   ))}
+                  {type === 'skse' && filteredCategories.length === 0 && (
+                    <option disabled value="">Tambahkan Kategori SK/SE di Pengaturan</option>
+                  )}
                 </select>
                 <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" size={16} />
               </div>

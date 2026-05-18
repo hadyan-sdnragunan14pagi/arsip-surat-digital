@@ -25,7 +25,7 @@ import MailList from './components/MailList';
 import CategoryManager from './components/CategoryManager';
 import UserManager from './components/UserManager';
 
-type View = 'dashboard' | 'incoming' | 'outgoing' | 'categories' | 'users';
+type View = 'dashboard' | 'incoming' | 'outgoing' | 'skse' | 'categories' | 'users';
 
 export default function App() {
   const { user, profile, loading, signIn, logout } = useAuth();
@@ -96,6 +96,7 @@ export default function App() {
           <NavItem icon={LayoutDashboard} label="Dashboard" view="dashboard" active={currentView === 'dashboard'} />
           <NavItem icon={Inbox} label="Surat Masuk" view="incoming" active={currentView === 'incoming'} />
           <NavItem icon={Send} label="Surat Keluar" view="outgoing" active={currentView === 'outgoing'} />
+           <NavItem icon={FileText} label="SK dan SE" view="skse" active={currentView === 'skse'} />
           
           <div className="mt-8">
             <div className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-2 px-4">Pengaturan</div>
@@ -173,6 +174,7 @@ export default function App() {
               {currentView === 'dashboard' && <Dashboard searchQuery={searchQuery} />}
               {currentView === 'incoming' && <MailList type="incoming" searchQuery={searchQuery} />}
               {currentView === 'outgoing' && <MailList type="outgoing" searchQuery={searchQuery} />}
+              {currentView === 'skse' && <MailList type="skse" searchQuery={searchQuery} />}
               {currentView === 'categories' && <CategoryManager />}
               {currentView === 'users' && <UserManager />}
             </motion.div>

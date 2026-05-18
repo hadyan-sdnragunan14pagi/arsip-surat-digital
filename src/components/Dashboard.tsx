@@ -120,8 +120,12 @@ export default function Dashboard({ searchQuery }: { searchQuery: string }) {
           <div className="flex-1 overflow-y-auto p-4 space-y-3">
             {filteredMails.length > 0 ? filteredMails.map(mail => (
               <div key={mail.id} className="flex gap-3 p-3 rounded-lg hover:bg-slate-50 transition-all border border-transparent hover:border-slate-100 group">
-                <div className={`w-8 h-8 rounded shrink-0 flex items-center justify-center text-xs font-bold ${mail.type === 'incoming' ? 'bg-blue-50 text-blue-600' : 'bg-emerald-50 text-emerald-600'}`}>
-                  {mail.type === 'incoming' ? 'IN' : 'OT'}
+                <div className={`w-8 h-8 rounded shrink-0 flex items-center justify-center text-xs font-bold ${
+                  mail.type === 'incoming' ? 'bg-blue-50 text-blue-600' : 
+                  mail.type === 'outgoing' ? 'bg-emerald-50 text-emerald-600' :
+                  'bg-purple-50 text-purple-600'
+                }`}>
+                  {mail.type === 'incoming' ? 'IN' : (mail.type === 'outgoing' ? 'OT' : 'SK')}
                 </div>
                 <div className="min-w-0">
                   <p className="text-xs font-semibold text-slate-800 truncate group-hover:text-blue-600 transition-colors">{mail.title}</p>
