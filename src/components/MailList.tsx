@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { collection, query, onSnapshot, orderBy, where, deleteDoc, doc } from 'firebase/firestore';
+import { collection, query, onSnapshot, orderBy, where, deleteDoc, doc, updateDoc, serverTimestamp } from 'firebase/firestore';
 import { db, handleFirestoreError, OperationType } from '../lib/firebase';
 import { useAuth } from '../hooks/useAuth';
 import { Mail, Category, MailType } from '../types';
@@ -8,7 +8,10 @@ import {
   Edit, 
   Filter,
   ChevronDown,
-  ExternalLink
+  ExternalLink,
+  Trash2,
+  Clock,
+  AlertCircle
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import MailForm from './MailForm';
@@ -59,12 +62,26 @@ export default function MailList({ type, searchQuery }: { type: MailType, search
     return matchesSearch && matchesCategory && matchesYear;
   });
 
-  const handleDelete = async (id: string) => {
-    if (confirm('Yakin ingin menghapus arsip ini?')) {
+  const handleDelete = async (mail: Mail) => {
+    const isAdmin = profile?.role === 'admin';
+    const confirmMsg = isAdmin 
+      ? 'Yakin ingin menghapus arsip ini secara permanen?' 
+      : 'Ajukan penghapusan arsip ini ke administrator?';
+
+    if (confirm(confirmMsg)) {
       try {
-        await deleteDoc(doc(db, 'mails', id));
+        if (isAdmin) {
+          await deleteDoc(doc(db, 'mails', mail.id));
+        } else {
+          await updateDoc(doc(db, 'mails', mail.id), {
+            deletionRequested: true,
+            deletionRequestedBy: user?.uid,
+            deletionRequestedAt: serverTimestamp(),
+            updatedAt: serverTimestamp()
+          });
+        }
       } catch (err) {
-        handleFirestoreError(err, OperationType.DELETE, 'mails/' + id);
+        handleFirestoreError(err, isAdmin ? OperationType.DELETE : OperationType.UPDATE, 'mails/' + mail.id);
       }
     }
   };
@@ -193,7 +210,15 @@ export default function MailList({ type, searchQuery }: { type: MailType, search
                         </span>
                       </td>
                       <td className="px-6 py-4">
-                        <p className="font-semibold text-slate-800 line-clamp-1">{mail.title}</p>
+                        <div className="flex items-center gap-2">
+                          <p className="font-semibold text-slate-800 line-clamp-1">{mail.title}</p>
+                          {mail.deletionRequested && (
+                            <div className="flex items-center gap-1 text-[9px] font-bold text-amber-600 bg-amber-50 px-1.5 py-0.5 rounded animate-pulse shrink-0">
+                              <Clock size={10} />
+                              PENDING HAPUS
+                            </div>
+                          )}
+                        </div>
                         <p className="text-[10px] text-slate-400 mt-0.5">{type === 'incoming' || type === 'skse' ? mail.sender : mail.recipient}</p>
                       </td>
                       <td className="px-6 py-4">
@@ -221,8 +246,17 @@ export default function MailList({ type, searchQuery }: { type: MailType, search
                           <button 
                             onClick={() => handleEdit(mail)}
                             className="p-1.5 text-slate-400 hover:text-blue-600 transition-colors"
+                            title="Edit"
                           >
                             <Edit size={16} />
+                          </button>
+                          <button 
+                            onClick={() => handleDelete(mail)}
+                            className={`p-1.5 transition-colors ${mail.deletionRequested ? 'text-amber-500 hover:text-amber-600' : 'text-slate-400 hover:text-red-600'}`}
+                            title={mail.deletionRequested ? 'Menunggu Persetujuan' : 'Hapus'}
+                            disabled={mail.deletionRequested && profile?.role !== 'admin'}
+                          >
+                            <Trash2 size={16} />
                           </button>
                         </div>
                       </td>
@@ -238,7 +272,7 @@ export default function MailList({ type, searchQuery }: { type: MailType, search
               </table>
             </div>
             <div className="px-6 py-3 bg-slate-50 border-t border-slate-100 flex items-center justify-between">
-              <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">SMP Negeri 01 Jakarta — Selesai</p>
+              <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">SDN Ragunan 14 Pagi — Selesai</p>
             </div>
           </div>
 

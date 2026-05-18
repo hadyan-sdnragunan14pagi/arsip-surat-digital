@@ -9,6 +9,7 @@ import {
   Filter, 
   Settings, 
   Users,
+  ShieldCheck,
   LogOut, 
   LayoutDashboard,
   Loader2,
@@ -24,14 +25,15 @@ import Dashboard from './components/Dashboard';
 import MailList from './components/MailList';
 import CategoryManager from './components/CategoryManager';
 import UserManager from './components/UserManager';
+import ApprovalCenter from './components/ApprovalCenter';
 
-type View = 'dashboard' | 'incoming' | 'outgoing' | 'skse' | 'categories' | 'users';
+type View = 'dashboard' | 'incoming' | 'outgoing' | 'skse' | 'categories' | 'users' | 'approvals';
 
 export default function App() {
   const { user, profile, loading, signIn, logout } = useAuth();
   const [currentView, setCurrentView] = useState<View>('dashboard');
   const [searchQuery, setSearchQuery] = useState('');
-  console.log('Auth State:', { user, profile, loading }); // Debugging line
+
   if (loading) {
     return (
       <div className="h-screen w-screen flex items-center justify-center bg-gray-50">
@@ -51,8 +53,8 @@ export default function App() {
           <div className="w-16 h-16 bg-blue-100 rounded-2xl flex items-center justify-center mx-auto mb-6">
             <BookOpen className="w-8 h-8 text-blue-600" />
           </div>
-          <h1 className="text-2xl font-semibold mb-2">E-Arsip Surat</h1>
-          <p className="text-gray-500 mb-8">Sistem pengarsipan surat masuk dan keluar sekolah.</p>
+          <h1 className="text-2xl font-semibold mb-2">Arsip Digital Surat Sekolah</h1>
+          <p className="text-gray-500 mb-8">Sistem pengarsipan digital surat SDN Ragunan 14 Pagi.</p>
           <button 
             onClick={signIn}
             className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 rounded-xl transition-all flex items-center justify-center gap-2"
@@ -97,13 +99,17 @@ export default function App() {
           <NavItem icon={Inbox} label="Surat Masuk" view="incoming" active={currentView === 'incoming'} />
           <NavItem icon={Send} label="Surat Keluar" view="outgoing" active={currentView === 'outgoing'} />
           <NavItem icon={FileText} label="SK dan SE" view="skse" active={currentView === 'skse'} />
-          {profile?.role === 'admin' && (
-            <div className="mt-8">
-              <div className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-2 px-4">Pengaturan</div>
-              <NavItem icon={Settings} label="Kategori Surat" view="categories" active={currentView === 'categories'} />
-            </div>
-          )}
           
+          <div className="mt-8">
+            <div className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-2 px-4">Pengaturan</div>
+            <NavItem icon={Settings} label="Kategori Surat" view="categories" active={currentView === 'categories'} />
+            {profile?.role === 'admin' && (
+              <>
+                <NavItem icon={Users} label="Manajemen Pengguna" view="users" active={currentView === 'users'} />
+                <NavItem icon={ShieldCheck} label="Pusat Persetujuan" view="approvals" active={currentView === 'approvals'} />
+              </>
+            )}
+          </div>
         </nav>
 
         <div className="p-4 border-t border-slate-100">
@@ -176,6 +182,7 @@ export default function App() {
               {currentView === 'skse' && <MailList type="skse" searchQuery={searchQuery} />}
               {currentView === 'categories' && <CategoryManager />}
               {currentView === 'users' && <UserManager />}
+              {currentView === 'approvals' && <ApprovalCenter />}
             </motion.div>
           </AnimatePresence>
         </div>

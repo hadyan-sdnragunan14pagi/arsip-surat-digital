@@ -20,6 +20,9 @@ export interface Mail {
   type: MailType;
   fileUrl?: string;
   creatorId: string;
+  deletionRequested?: boolean;
+  deletionRequestedBy?: string;
+  deletionRequestedAt?: any;
   createdAt: any;
   updatedAt: any;
 }
