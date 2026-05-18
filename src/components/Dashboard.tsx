@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { collection, query, onSnapshot, orderBy, limit, where } from 'firebase/firestore';
 import { db, handleFirestoreError, OperationType } from '../lib/firebase';
 import { Mail, Category } from '../types';
-import { Inbox, Send, Bookmark, Clock, ArrowUpRight, ArrowDownRight, Activity } from 'lucide-react';
+import { Inbox, Send, Bookmark, Clock, ArrowUpRight, ArrowDownRight, Activity, Plus } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 
 export default function Dashboard({ searchQuery }: { searchQuery: string }) {

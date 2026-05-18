@@ -151,7 +151,7 @@ export default function MailList({ type, searchQuery }: { type: MailType, search
                       </td>
                       <td className="px-6 py-4">
                         <p className="font-semibold text-slate-800 line-clamp-1">{mail.title}</p>
-                        <p className="text-[10px] text-slate-400 mt-0.5">{type === 'incoming' ? mail.sender : (type === 'skse' ? 'Instansi' : mail.recipient)}</p>
+                        <p className="text-[10px] text-slate-400 mt-0.5">{type === 'incoming' || type === 'skse' ? mail.sender : mail.recipient}</p>
                       </td>
                       <td className="px-6 py-4">
                         <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${

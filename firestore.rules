@@ -54,10 +54,8 @@ service cloud.firestore {
              data.referenceNumber is string && data.referenceNumber.size() <= 100 &&
              data.date is string &&
              data.categoryId is string &&
-             data.type in ['incoming', 'outgoing'] &&
-             data.creatorId == request.auth.uid &&
-             data.createdAt == request.time &&
-             data.updatedAt == request.time &&
+             data.type in ['incoming', 'outgoing', 'skse'] &&
+             data.creatorId is string &&
              (data.get('description', '') is string && data.get('description', '').size() <= 1000) &&
              (data.get('sender', '') is string) &&
              (data.get('recipient', '') is string) &&
@@ -68,7 +66,6 @@ service cloud.firestore {
       return data.keys().hasAll(['name', 'createdAt']) &&
              data.keys().size() <= 4 &&
              data.name is string && data.name.size() > 0 && data.name.size() <= 100 &&
-             data.createdAt == request.time &&
              (data.get('description', '') is string && data.get('description', '').size() <= 500);
     }
 
@@ -91,19 +88,23 @@ service cloud.firestore {
 
     match /categories/{categoryId} {
       allow read: if isSignedIn();
-      allow create: if isAdmin() && isValidCategory(incoming());
+      allow create: if isAdmin() && isValidCategory(incoming()) && incoming().createdAt == request.time;
       allow update: if isAdmin() && isValidCategory(incoming());
       allow delete: if isAdmin();
     }
 
     match /mails/{mailId} {
       allow read: if isSignedIn();
-      allow create: if isStaff() && isValidMail(incoming()) && exists(/databases/$(database)/documents/categories/$(incoming().categoryId));
-      allow update: if isStaff() && isValidMail(incoming()) && (
+      allow create: if isStaff() && isValidMail(incoming()) && 
+                    incoming().createdAt == request.time &&
+                    incoming().updatedAt == request.time &&
+                    incoming().creatorId == request.auth.uid &&
+                    exists(/databases/$(database)/documents/categories/$(incoming().categoryId));
+      allow update: if isStaff() && isValidMail(incoming()) && 
+                    incoming().updatedAt == request.time && (
         // Only allow updating non-immutable fields
         incoming().creatorId == existing().creatorId &&
-        incoming().createdAt == existing().createdAt &&
-        incoming().diff(existing()).affectedKeys().hasAny(['title', 'description', 'sender', 'recipient', 'referenceNumber', 'date', 'categoryId', 'type', 'fileUrl', 'updatedAt'])
+        incoming().createdAt == existing().createdAt
       );
       allow delete: if isAdmin();
     }

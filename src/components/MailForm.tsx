@@ -116,7 +116,7 @@ export default function MailForm({ type, mail, categories, onClose }: MailFormPr
         }
 
         setUploading(true);
-        const folderId = import.meta.env.VITE_DRIVE_FOLDER_ID;
+        const folderId = (import.meta as any).env.VITE_DRIVE_FOLDER_ID;
         const categoryName = categories.find(c => c.id === formData.categoryId)?.name || 'Surat';
         
         try {

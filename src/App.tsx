@@ -31,7 +31,7 @@ export default function App() {
   const { user, profile, loading, signIn, logout } = useAuth();
   const [currentView, setCurrentView] = useState<View>('dashboard');
   const [searchQuery, setSearchQuery] = useState('');
-
+  console.log('Auth State:', { user, profile, loading }); // Debugging line
   if (loading) {
     return (
       <div className="h-screen w-screen flex items-center justify-center bg-gray-50">
@@ -96,15 +96,14 @@ export default function App() {
           <NavItem icon={LayoutDashboard} label="Dashboard" view="dashboard" active={currentView === 'dashboard'} />
           <NavItem icon={Inbox} label="Surat Masuk" view="incoming" active={currentView === 'incoming'} />
           <NavItem icon={Send} label="Surat Keluar" view="outgoing" active={currentView === 'outgoing'} />
-           <NavItem icon={FileText} label="SK dan SE" view="skse" active={currentView === 'skse'} />
+          <NavItem icon={FileText} label="SK dan SE" view="skse" active={currentView === 'skse'} />
+          {profile?.role === 'admin' && (
+            <div className="mt-8">
+              <div className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-2 px-4">Pengaturan</div>
+              <NavItem icon={Settings} label="Kategori Surat" view="categories" active={currentView === 'categories'} />
+            </div>
+          )}
           
-          <div className="mt-8">
-            <div className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-2 px-4">Pengaturan</div>
-            <NavItem icon={Settings} label="Kategori Surat" view="categories" active={currentView === 'categories'} />
-            {profile?.role === 'admin' && (
-              <NavItem icon={Users} label="Manajemen Pengguna" view="users" active={currentView === 'users'} />
-            )}
-          </div>
         </nav>
 
         <div className="p-4 border-t border-slate-100">
