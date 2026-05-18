@@ -1,0 +1,130 @@
+{
+  "entities": {
+    "mail": {
+      "title": "Mail Document",
+      "description": "Represents an incoming or outgoing letter",
+      "type": "object",
+      "properties": {
+        "title": {
+          "type": "string",
+          "description": "Judul atau perihal surat"
+        },
+        "description": {
+          "type": "string",
+          "description": "Ringkasan isi surat"
+        },
+        "sender": {
+          "type": "string",
+          "description": "Pengirim surat"
+        },
+        "recipient": {
+          "type": "string",
+          "description": "Penerima surat"
+        },
+        "referenceNumber": {
+          "type": "string",
+          "description": "Nomor surat"
+        },
+        "date": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Tanggal surat"
+        },
+        "categoryId": {
+          "type": "string",
+          "description": "Link to category ID"
+        },
+        "type": {
+          "type": "string",
+          "enum": [
+            "incoming",
+            "outgoing"
+          ],
+          "description": "Tipe surat: masuk atau keluar"
+        },
+        "fileUrl": {
+          "type": "string",
+          "description": "URL file surat (jika ada)"
+        },
+        "creatorId": {
+          "type": "string",
+          "description": "UID user yang mengarsipkan"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "title",
+        "referenceNumber",
+        "date",
+        "categoryId",
+        "type",
+        "creatorId"
+      ]
+    },
+    "category": {
+      "title": "Mail Category",
+      "description": "Kategori untuk mengelompokkan surat",
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Nama kategori"
+        },
+        "description": {
+          "type": "string",
+          "description": "Deskripsi kategori"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "name"
+      ]
+    },
+    "userProfile": {
+      "title": "User Profile",
+      "description": "Metadata tambahan untuk pengguna",
+      "type": "object",
+      "properties": {
+        "role": {
+          "type": "string",
+          "enum": [
+            "admin",
+            "staff"
+          ],
+          "description": "Role pengguna"
+        },
+        "email": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "role",
+        "email"
+      ]
+    }
+  },
+  "firestore": {
+    "/mails/{mailId}": {
+      "schema": "mail",
+      "description": "Koleksi semua surat masuk dan keluar"
+    },
+    "/categories/{categoryId}": {
+      "schema": "category",
+      "description": "Koleksi kategori surat"
+    },
+    "/users/{userId}": {
+      "schema": "userProfile",
+      "description": "Profil pengguna dan perannya"
+    }
+  }
+}

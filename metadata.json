@@ -1,0 +1,8 @@
+{
+  "name": "Arsip Digital Surat Sekolah",
+  "description": "Sistem pengarsipan surat masuk dan surat keluar sekolah dengan manajemen kategori dan pencarian efisien.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

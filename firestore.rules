@@ -1,0 +1,111 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Default deny
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // --- Helpers ---
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isEmailVerified() {
+      return request.auth.token.email_verified == true;
+    }
+
+    function getUserData() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
+    }
+
+    function isAdmin() {
+      return isSignedIn() && (
+        request.auth.token.email == 'hadyan.abdul7@admin.sd.belajar.id' ||
+        (exists(/databases/$(database)/documents/users/$(request.auth.uid)) && getUserData().role == 'admin')
+      );
+    }
+
+    function isStaff() {
+      return isSignedIn() && (
+        isAdmin() ||
+        (exists(/databases/$(database)/documents/users/$(request.auth.uid)) && getUserData().role == 'staff')
+      );
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    // --- Schema Validations ---
+
+    function isValidMail(data) {
+      return data.keys().hasAll(['title', 'referenceNumber', 'date', 'categoryId', 'type', 'creatorId', 'createdAt', 'updatedAt']) &&
+             data.keys().size() <= 12 &&
+             data.title is string && data.title.size() <= 200 &&
+             data.referenceNumber is string && data.referenceNumber.size() <= 100 &&
+             data.date is string &&
+             data.categoryId is string &&
+             data.type in ['incoming', 'outgoing'] &&
+             data.creatorId == request.auth.uid &&
+             data.createdAt == request.time &&
+             data.updatedAt == request.time &&
+             (data.get('description', '') is string && data.get('description', '').size() <= 1000) &&
+             (data.get('sender', '') is string) &&
+             (data.get('recipient', '') is string) &&
+             (data.get('fileUrl', '') is string);
+    }
+
+    function isValidCategory(data) {
+      return data.keys().hasAll(['name', 'createdAt']) &&
+             data.keys().size() <= 4 &&
+             data.name is string && data.name.size() > 0 && data.name.size() <= 100 &&
+             data.createdAt == request.time &&
+             (data.get('description', '') is string && data.get('description', '').size() <= 500);
+    }
+
+    function isValidUser(data) {
+      return data.keys().hasAll(['role', 'email']) &&
+             data.keys().size() == 2 &&
+             data.role in ['admin', 'staff'] &&
+             data.email == request.auth.token.email;
+    }
+
+    // --- Collection Rules ---
+
+    match /users/{userId} {
+      allow get: if isSignedIn() && (request.auth.uid == userId || isAdmin());
+      allow list: if isAdmin();
+      allow create: if isSignedIn() && userId == request.auth.uid && isValidUser(incoming());
+      allow update: if isAdmin() && isValidUser(incoming());
+      allow delete: if isAdmin();
+    }
+
+    match /categories/{categoryId} {
+      allow read: if isSignedIn();
+      allow create: if isAdmin() && isValidCategory(incoming());
+      allow update: if isAdmin() && isValidCategory(incoming());
+      allow delete: if isAdmin();
+    }
+
+    match /mails/{mailId} {
+      allow read: if isSignedIn();
+      allow create: if isStaff() && isValidMail(incoming()) && exists(/databases/$(database)/documents/categories/$(incoming().categoryId));
+      allow update: if isStaff() && isValidMail(incoming()) && (
+        // Only allow updating non-immutable fields
+        incoming().creatorId == existing().creatorId &&
+        incoming().createdAt == existing().createdAt &&
+        incoming().diff(existing()).affectedKeys().hasAny(['title', 'description', 'sender', 'recipient', 'referenceNumber', 'date', 'categoryId', 'type', 'fileUrl', 'updatedAt'])
+      );
+      allow delete: if isAdmin();
+    }
+  }
+}
