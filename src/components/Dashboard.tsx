@@ -31,6 +31,7 @@ export default function Dashboard({ searchQuery }: { searchQuery: string }) {
   const stats = {
     incoming: mails.filter(m => m.type === 'incoming').length,
     outgoing: mails.filter(m => m.type === 'outgoing').length,
+    skse: mails.filter(m => m.type === 'skse').length,
     categories: categories.length,
     today: mails.filter(m => {
       const today = new Date();
@@ -55,18 +56,24 @@ export default function Dashboard({ searchQuery }: { searchQuery: string }) {
 
   return (
     <div className="space-y-6">
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
         <StatCard 
           label="Surat Masuk" 
           value={stats.incoming.toLocaleString()} 
-          subText="842" 
+          subText="Inbound" 
           type="incoming"
         />
         <StatCard 
           label="Surat Keluar" 
           value={stats.outgoing.toLocaleString()} 
-          subText="442"
+          subText="Outbound"
           type="outgoing"
+        />
+        <StatCard 
+          label="SK & SE" 
+          value={stats.skse.toLocaleString()} 
+          subText="Keputusan/Edaran"
+          type="skse"
         />
         <StatCard 
           label="Total Kategori" 
@@ -152,6 +159,7 @@ function StatCard({ label, value, subText, type }: { label: string, value: strin
   const colorClass = 
     type === 'incoming' ? 'text-blue-600' : 
     type === 'outgoing' ? 'text-emerald-500' : 
+    type === 'skse' ? 'text-purple-600' :
     type === 'categories' ? 'text-amber-500' : 
     'text-purple-500';
 

@@ -20,7 +20,11 @@ export default function MailList({ type, searchQuery }: { type: MailType, search
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [selectedMail, setSelectedMail] = useState<Mail | null>(null);
   const [filterCategory, setFilterCategory] = useState<string>('all');
+  const [filterYear, setFilterYear] = useState<string>(new Date().getFullYear().toString());
   const [isFiltering, setIsFiltering] = useState(false);
+  const [isYearFiltering, setIsYearFiltering] = useState(false);
+
+  const years = Array.from({ length: new Date().getFullYear() - 2025 + 2 }, (_, i) => (2025 + i).toString()).reverse();
 
   useEffect(() => {
     const qMails = query(
@@ -50,8 +54,9 @@ export default function MailList({ type, searchQuery }: { type: MailType, search
       m.recipient?.toLowerCase().includes(searchQuery.toLowerCase());
     
     const matchesCategory = filterCategory === 'all' || m.categoryId === filterCategory;
+    const matchesYear = filterYear === 'all' || m.date.startsWith(filterYear);
     
-    return matchesSearch && matchesCategory;
+    return matchesSearch && matchesCategory && matchesYear;
   });
 
   const handleDelete = async (id: string) => {
@@ -78,6 +83,44 @@ export default function MailList({ type, searchQuery }: { type: MailType, search
         </div>
         
         <div className="flex items-center gap-2">
+          {/* Year Filter */}
+          <div className="relative">
+            <button 
+              onClick={() => setIsYearFiltering(!isYearFiltering)}
+              className={`flex items-center gap-2 px-3 py-2 bg-white border border-slate-200 rounded-lg text-xs font-semibold tracking-tight hover:bg-slate-50 transition-all ${filterYear !== 'all' ? 'text-blue-600 border-blue-500' : 'text-slate-600'}`}
+            >
+              <span>{filterYear === 'all' ? 'Semua Tahun' : filterYear}</span>
+              <ChevronDown size={12} className="ml-1 opacity-50" />
+            </button>
+            <AnimatePresence>
+              {isYearFiltering && (
+                <motion.div 
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: 10 }}
+                  className="absolute right-0 mt-2 w-32 bg-white border border-gray-100 rounded-xl shadow-xl z-20 py-2"
+                >
+                  <button 
+                    onClick={() => { setFilterYear('all'); setIsYearFiltering(false); }}
+                    className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 ${filterYear === 'all' ? 'text-blue-600 font-medium' : 'text-gray-600'}`}
+                  >
+                    Semua
+                  </button>
+                  {years.map(year => (
+                    <button 
+                      key={year}
+                      onClick={() => { setFilterYear(year); setIsYearFiltering(false); }}
+                      className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 ${filterYear === year ? 'text-blue-600 font-medium' : 'text-gray-600'}`}
+                    >
+                      {year}
+                    </button>
+                  ))}
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+
+          {/* Category Filter */}
           <div className="relative">
             <button 
               onClick={() => setIsFiltering(!isFiltering)}
@@ -195,7 +238,7 @@ export default function MailList({ type, searchQuery }: { type: MailType, search
               </table>
             </div>
             <div className="px-6 py-3 bg-slate-50 border-t border-slate-100 flex items-center justify-between">
-              <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">SDN Ragunan 14 Pagi — Selesai</p>
+              <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">SMP Negeri 01 Jakarta — Selesai</p>
             </div>
           </div>
 

@@ -30,7 +30,7 @@ export default function MailForm({ type, mail, categories, onClose }: MailFormPr
   const [file, setFile] = useState<File | null>(null);
   const [tokenMissing, setTokenMissing] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
-
+  
   const filteredCategories = type === 'skse' 
     ? categories.filter(c => c.name.toLowerCase().includes('keputusan') || c.name.toLowerCase().includes('edaran'))
     : categories;
@@ -57,21 +57,28 @@ export default function MailForm({ type, mail, categories, onClose }: MailFormPr
       const generateSequence = async () => {
         setIsGenerating(true);
         try {
-          const q = query(collection(db, 'mails'), where('type', '==', type));
+          const year = new Date(formData.date).getFullYear() || new Date().getFullYear();
+          // Filter by type and date starting with the current year (YYYY)
+          const q = query(
+            collection(db, 'mails'), 
+            where('type', '==', type),
+            where('date', '>=', `${year}-01-01`),
+            where('date', '<=', `${year}-12-31`)
+          );
+          
           const snapshot = await getCountFromServer(q);
           const count = snapshot.data().count;
-                    
-          if (type === 'outgoing') {
-          const nextNum = (count + 1).toString().padStart(3, '0');
-          const category = categories.find(c => c.id === formData.categoryId);
-          const code = category?.code || 'SK';
           
-          setFormData(prev => ({
-            ...prev,
-            referenceNumber: `${nextNum}/${code}`
-          }));
-        } else if (type === 'skse') {
-            const year = new Date().getFullYear();
+          if (type === 'outgoing') {
+            const nextNum = (count + 1).toString().padStart(3, '0');
+            const category = categories.find(c => c.id === formData.categoryId);
+            const code = category?.code || 'SK';
+            
+            setFormData(prev => ({
+              ...prev,
+              referenceNumber: `${nextNum}/${code}`
+            }));
+          } else if (type === 'skse') {
             setFormData(prev => ({
               ...prev,
               referenceNumber: `${count + 1} Tahun ${year}`
@@ -85,7 +92,7 @@ export default function MailForm({ type, mail, categories, onClose }: MailFormPr
       };
       generateSequence();
     }
-  }, [formData.categoryId, type, mail, categories]);
+  }, [formData.categoryId, formData.date, type, mail, categories]);
 
   const handleDriveConnect = async () => {
     setLoading(true);
