@@ -52,7 +52,7 @@ export default function App() {
         >
           <div className="w-32 h-32 bg-blue-100 rounded-2xl flex items-center justify-center mx-auto mb-6">
             {/* <BookOpen className="w-8 h-8 text-blue-600" /> */}
-            <img src="/logo-sd.png" alt="Logo" className="w-32 h-32" />
+            <img src="/favicon-sdnragunan14.svg" alt="Logo" className="w-32 h-32" />
           </div>
           <h1 className="text-2xl font-semibold mb-2">Arsip Digital Surat Sekolah</h1>
           <p className="text-gray-500 mb-8">Sistem pengarsipan digital surat SDN Ragunan 14 Pagi.</p>
@@ -86,7 +86,7 @@ export default function App() {
       {/* Sidebar */}
       <aside className="w-64 bg-white border-r border-slate-200 flex flex-col hidden md:flex">
         <div className="p-6 border-b border-slate-100">
-          <img src="/logo-sd.png" alt="Logo" className="mx-auto w-16 h-16 mb-2" />
+          <img src="/favicon-sdnragunan14.svg" alt="Logo" className="mx-auto w-16 h-16 mb-2" />
           <div className="flex items-center gap-2 mb-1">
             <h1 className="text-xl font-bold tracking-tight text-blue-600">
               Arsip Digital <span className="text-slate-800">Sekolah</span>
