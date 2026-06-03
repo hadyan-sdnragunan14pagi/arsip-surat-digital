@@ -18,7 +18,9 @@ import {
   Trash2,
   ExternalLink,
   ChevronRight,
-  BookOpen
+  BookOpen,
+  Menu,
+  X
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import Dashboard from './components/Dashboard';
@@ -33,6 +35,7 @@ export default function App() {
   const { user, profile, loading, signIn, logout } = useAuth();
   const [currentView, setCurrentView] = useState<View>('dashboard');
   const [searchQuery, setSearchQuery] = useState('');
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   if (loading) {
     return (
@@ -69,7 +72,10 @@ export default function App() {
 
   const NavItem = ({ icon: Icon, label, view, active }: { icon: any, label: string, view: View, active: boolean }) => (
     <button 
-      onClick={() => setCurrentView(view)}
+      onClick={() => {
+        setCurrentView(view);
+        setIsSidebarOpen(false);
+      }}
       className={`w-full flex items-center gap-3 px-4 py-2 text-sm transition-all relative ${
         active 
           ? 'bg-slate-50 text-slate-800 font-medium border-r-3 border-blue-600' 
@@ -83,9 +89,31 @@ export default function App() {
 
   return (
     <div className="flex h-screen bg-slate-50 overflow-hidden font-sans">
+      {/* Mobile Overlay */}
+      <AnimatePresence>
+        {isSidebarOpen && (
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setIsSidebarOpen(false)}
+            className="fixed inset-0 bg-slate-900/20 backdrop-blur-sm z-40 md:hidden"
+          />
+        )}
+      </AnimatePresence>
+
       {/* Sidebar */}
-      <aside className="w-64 bg-white border-r border-slate-200 flex flex-col hidden md:flex">
-        <div className="p-6 border-b border-slate-100">
+      <aside className={`
+        fixed inset-y-0 left-0 z-50 w-64 bg-white border-r border-slate-200 flex flex-col transition-transform duration-300 ease-in-out md:static md:translate-x-0
+        ${isSidebarOpen ? 'translate-x-0 shadow-2xl' : '-translate-x-full'}
+      `}>
+        <div className="p-6 border-b border-slate-100 relative">
+          <button 
+            onClick={() => setIsSidebarOpen(false)}
+            className="absolute right-4 top-1/2 -translate-y-1/2 md:hidden p-2 text-slate-400 hover:text-slate-600 transition-colors"
+          >
+            <X size={20} />
+          </button>
           <img src="/favicon-sdnragunan14.svg" alt="Logo" className="mx-auto w-16 h-16 mb-2" />
           <div className="flex items-center gap-2 mb-1">
             <h1 className="text-xl font-bold tracking-tight text-blue-600">
@@ -135,16 +163,24 @@ export default function App() {
       {/* Main Content */}
       <main className="flex-1 flex flex-col h-full overflow-hidden">
         {/* Header */}
-        <header className="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-8 shrink-0">
-          <div className="relative w-96 max-w-full">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
-            <input 
-              type="text" 
-              placeholder="Cari nomor surat, perihal, pengirim..." 
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 bg-slate-50 border border-slate-200 focus:bg-white focus:border-blue-500 rounded-lg transition-all text-sm outline-none"
-            />
+        <header className="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-4 md:px-8 shrink-0">
+          <div className="flex items-center gap-3 flex-1">
+            <button 
+              onClick={() => setIsSidebarOpen(true)}
+              className="md:hidden p-2 -ml-2 text-slate-500 hover:bg-slate-50 rounded-lg transition-colors"
+            >
+              <Menu size={20} />
+            </button>
+            <div className="relative w-full max-w-md">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
+              <input 
+                type="text" 
+                placeholder="Cari surat..." 
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full pl-10 pr-4 py-2 bg-slate-50 border border-slate-200 focus:bg-white focus:border-blue-500 rounded-lg transition-all text-sm outline-none"
+              />
+            </div>
           </div>
           
           <div className="flex items-center gap-6">
@@ -169,7 +205,7 @@ export default function App() {
         </header>
 
         {/* View Content */}
-        <div className="flex-1 overflow-y-auto p-8 bg-slate-50/50">
+        <div className="flex-1 overflow-y-auto p-4 md:p-8 bg-slate-50/50">
           <AnimatePresence mode="wait">
             <motion.div
               key={currentView}
